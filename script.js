@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', (event) => {
-    const parent = document.getElementById('parent');
+    const items = document.querySelectorAll('#parent .image');
     let dragSrcEl = null;
 
     function handleDragStart(e) {
-        this.style.opacity = '0.4';
         dragSrcEl = this;
         e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/html', this.innerHTML);
+        e.dataTransfer.setData('text/plain', this.id);
+        this.style.opacity = '0.4';
     }
 
     function handleDragOver(e) {
@@ -17,11 +17,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return false;
     }
 
-    function handleDragEnter(e) {
+    function handleDragEnter() {
         this.classList.add('over');
     }
 
-    function handleDragLeave(e) {
+    function handleDragLeave() {
         this.classList.remove('over');
     }
 
@@ -30,28 +30,34 @@ document.addEventListener('DOMContentLoaded', (event) => {
             e.stopPropagation();
         }
 
-        if (dragSrcEl != this) {
-            let tempBackground = window.getComputedStyle(this).backgroundImage;
+        const srcId = e.dataTransfer.getData('text/plain');
+        const dragSrcEl = document.getElementById(srcId);
+
+        if (dragSrcEl !== this) {
+            // Swap the inner HTML
+            const tempHTML = dragSrcEl.innerHTML;
+            dragSrcEl.innerHTML = this.innerHTML;
+            this.innerHTML = tempHTML;
+
+            // Swap the background images
+            const tempBackground = window.getComputedStyle(this).backgroundImage;
             this.style.backgroundImage = window.getComputedStyle(dragSrcEl).backgroundImage;
             dragSrcEl.style.backgroundImage = tempBackground;
 
-            dragSrcEl.innerHTML = this.innerHTML;
-            this.innerHTML = e.dataTransfer.getData('text/html');
+            // Swap the ids
+            const tempId = dragSrcEl.id;
+            dragSrcEl.id = this.id;
+            this.id = tempId;
         }
-
         return false;
     }
 
-    function handleDragEnd(e) {
+    function handleDragEnd() {
         this.style.opacity = '1';
-        
-        items.forEach(function (item) {
-            item.classList.remove('over');
-        });
+        items.forEach(item => item.classList.remove('over'));
     }
 
-    let items = document.querySelectorAll('#parent .image');
-    items.forEach(function(item) {
+    items.forEach(item => {
         item.addEventListener('dragstart', handleDragStart, false);
         item.addEventListener('dragenter', handleDragEnter, false);
         item.addEventListener('dragover', handleDragOver, false);
